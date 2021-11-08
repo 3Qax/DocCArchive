@@ -26,7 +26,7 @@ extension DocCArchive.DocCSchema_0_1 {
     }
 
     case heading      (text: String, anchor: String, level: Int)
-    case aside        (style: Style, content: [ Content ])
+    case aside        (name: String?, style: Style, content: [ Content ])
     case paragraph    (inlineContent: [ InlineContent ])
     case codeListing  (CodeListing)
     case step         (Step)
@@ -40,7 +40,7 @@ extension DocCArchive.DocCSchema_0_1 {
           if !anchor.isEmpty { ms += " #\(anchor)" }
           if !text  .isEmpty { ms += " “\(text)”"  }
           return ms + ">"
-        case .aside      (let style, let content):
+        case .aside      (_, let style, let content):
           return "<aside[\(style)]: \(content)>"
         case .orderedList  (let items)    : return "<ol>\(items)</ol>"
         case .unorderedList(let items)    : return "<ul>\(items)</ul>"
@@ -53,7 +53,7 @@ extension DocCArchive.DocCSchema_0_1 {
     // - MARK: Codable
     
     private enum CodingKeys: String, CodingKey {
-      case content, anchor, level, type, text, style, inlineContent, items
+      case content, anchor, level, type, text, style, inlineContent, items, name
     }
     
     public init(from decoder: Decoder) throws {
@@ -69,7 +69,8 @@ extension DocCArchive.DocCSchema_0_1 {
         case "aside":
           let style   = try container.decode(Style.self     , forKey: .style)
           let content = try container.decode([Content].self , forKey: .content)
-          self = .aside(style: style, content: content)
+          let name = try container.decodeIfPresent(String.self, forKey: .name)
+        self = .aside(name: name, style: style, content: content)
         case "orderedList":
           let content = try container.decode([ Item ].self, forKey: .items)
           self = .orderedList(content)
@@ -100,8 +101,9 @@ extension DocCArchive.DocCSchema_0_1 {
           try container.encode(text            , forKey: .text)
           try container.encode(anchor          , forKey: .anchor)
           try container.encode(level           , forKey: .level)
-        case .aside(let style, let content):
+        case .aside(let name, let style, let content):
           try container.encode("aside"         , forKey: .type)
+          try container.encode(name            , forKey: .name)
           try container.encode(style           , forKey: .style)
           try container.encode(content         , forKey: .content)
         case .unorderedList(let items):

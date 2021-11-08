@@ -46,6 +46,7 @@ public struct DocCArchive {
   public typealias Reference      = DocCSchema_0_1.Reference
   public typealias TopicReference = DocCSchema_0_1.TopicReference
   public typealias ImageReference = DocCSchema_0_1.ImageReference
+  public typealias LinkReference  = DocCSchema_0_1.LinkReference
 
   public let url              : URL
   public let dataURL          : URL
